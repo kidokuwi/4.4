@@ -61,10 +61,10 @@ def handle_client(client_soc, http_version):
 
 def main():
     if len(sys.argv) < 2:
-        print("need 1.0 or 1.1")
-        return
-
-    http_version = sys.argv[1]
+        print("need 1.0 or 1.1, setting 1.1")
+        http_version = "1.1"
+    else:
+        http_version = sys.argv[1]
     if http_version != "1.0" and http_version != "1.1":
         print("use 1.0 or 1.1")
         return
