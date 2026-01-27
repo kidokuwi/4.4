@@ -6,7 +6,7 @@ import threading
 import sys
 from http_functions import http_recv, http_send
 
-
+web_root = r"C:\Users\1idok\PycharmProjects\taskLST\http\4.4\webroot"
 def handle_client(client_soc, http_version):
     while True:
         try:
@@ -21,8 +21,18 @@ def handle_client(client_soc, http_version):
             resource = request_line.split()[1]
             if resource == "/":
                 resource = "/index.html"
+            if resource == "/forbidden.html":
+                http_send(client_soc, f"HTTP/{http_version} 403 Forbidden\r\n", "", b"403 Forbidden")
+                continue
+            elif resource == "/MovedTemporarily.html":
+                response_headers = "Location: /index.html\r\n"
+                http_send(client_soc, f"HTTP/{http_version} 302 Found\r\n", response_headers, b"")
+                continue
+            elif resource == "/internalServerError.html":
+                http_send(client_soc, f"HTTP/{http_version} 500 Internal Server Error\r\n", "", b"500 Internal Server Error")
+                continue
 
-            file_path = resource.lstrip("/")
+            file_path = web_root + resource
 
             if os.path.isfile(file_path):
                 ext = os.path.splitext(file_path)[1].lower()
@@ -51,6 +61,7 @@ def handle_client(client_soc, http_version):
                 break
 
             if headers and headers.get('connection', '').lower() == 'close':
+                print("connection close requested")
                 break
 
         except:
