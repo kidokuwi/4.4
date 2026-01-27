@@ -19,6 +19,25 @@ def handle_client(client_soc, http_version):
                 break
 
             resource = request_line.split()[1]
+
+            if resource.startswith("/calculate-next"):
+                result_val = "5"
+                if "?" in resource:
+                    numEq = resource.split("?")[1]
+                    if numEq.startswith("num="):
+                        try:
+                            num = int(numEq.split("=")[1])
+                            result_val = str(num + 1)
+                        except:
+                            print("invalid num,")
+                            result_val = "5"
+                cont = result_val.encode()
+                response_headers = f"Content-Type: text/html; charset=UTF-8\r\nContent-Length: {len(cont)}\r\n"
+                http_send(client_soc, f"HTTP/{http_version} 200 OK\r\n", response_headers, cont)
+                continue
+
+
+
             if resource == "/":
                 resource = "/index.html"
             if resource == "/forbidden.html":
