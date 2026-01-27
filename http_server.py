@@ -10,15 +10,29 @@ web_root = r"C:\Users\1idok\PycharmProjects\taskLST\http\4.4\webroot"
 def handle_client(client_soc, http_version):
     while True:
         try:
-            request_line, headers, _ = http_recv(client_soc)
+            request_line, headers, body = http_recv(client_soc)
 
             if not request_line:
                 break
 
-            if not request_line.startswith("GET") or len(request_line.split()) < 3:
+            if len(request_line.split()) < 3:
                 break
 
             resource = request_line.split()[1]
+
+            if request_line.startswith("POST") and resource.startswith("/upload"):
+                try:
+                    qury = resource.split("?")[1]
+                    file_name = qury.split("file-name=")[1].split("&")[0]
+                    save_path = web_root + "\\" + file_name
+
+                    with open(save_path, "wb") as f:
+                        f.write(body) # needs admin for some reason
+
+                    print(f"saved: {file_name}")
+                except Exception as e:
+                    print(f"err: {e}")
+                continue
 
             if resource.startswith("/calculate-next"):
                 result_val = "5"
@@ -51,7 +65,7 @@ def handle_client(client_soc, http_version):
                     result = "0.0"
 
                 cont = result.encode()
-                response_headers = f"Content-Type: text/plain; charset=UTF-8\r\nContent-Length: {len(cont)}\r\n"
+                response_headers = f"Content-Type: text/html; charset=UTF-8\r\nContent-Length: {len(cont)}\r\n"
                 http_send(client_soc, f"HTTP/{http_version} 200 OK\r\n", response_headers, cont)
                 continue
 
