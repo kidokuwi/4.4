@@ -36,6 +36,24 @@ def handle_client(client_soc, http_version):
                 http_send(client_soc, f"HTTP/{http_version} 200 OK\r\n", response_headers, cont)
                 continue
 
+            if resource.startswith("/calculate-area"):
+                try:
+                    query = resource.split("?")[1]
+                    p1 = query.split("&")[0]
+                    p2 = query.split("&")[1]
+
+                    side1 = float(p1.split("=")[1])
+                    side2 = float(p2.split("=")[1])
+
+                    area = (side1 * side2) / 2
+                    result = str(area)
+                except:
+                    result = "0.0"
+
+                cont = result.encode()
+                response_headers = f"Content-Type: text/plain; charset=UTF-8\r\nContent-Length: {len(cont)}\r\n"
+                http_send(client_soc, f"HTTP/{http_version} 200 OK\r\n", response_headers, cont)
+                continue
 
 
             if resource == "/":
