@@ -20,6 +20,27 @@ def handle_client(client_soc, http_version):
 
             resource = request_line.split()[1]
 
+            if resource.startswith("/image"):
+                try:
+                    query = resource.split("?")[1]
+                    img_name = query.split("image-name=")[1].split("&")[0]
+                    img_path = web_root + "\\" + img_name
+
+                    if os.path.isfile(img_path):
+                        with open(img_path, "rb") as f:
+                            content = f.read()
+
+                        ext = os.path.splitext(img_path)[1].lower()
+                        content_type = "image/jpeg" if ext == ".jpg" or ext == ".jpeg" else "image/png"
+
+                        res_headers = f"Content-Type: {content_type}\r\nContent-Length: {len(content)}\r\n"
+                        http_send(client_soc, f"HTTP/{http_version} 200 OK\r\n", res_headers, content)
+                    else:
+                        http_send(client_soc, f"HTTP/{http_version} 404 Not Found\r\n", "", b"404 Not Found")
+                except:
+                    http_send(client_soc, f"HTTP/{http_version} 400 Bad Request\r\n", "", b"400 Bad Request")
+                continue
+
             if request_line.startswith("POST") and resource.startswith("/upload"):
                 try:
                     qury = resource.split("?")[1]
